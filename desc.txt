@@ -1,0 +1,157 @@
+Resume your Claude Session--
+/claude -r or resume
+
+
+To continue opening your very last session in the current project
+directory--
+/claude -c or continue
+
+So basically one thing i should do is , complete one
+task in one session.
+
+
+And if i am developing new feature , then i should use
+new session and do only that things related to that feature
+only .
+
+This helps us not mixing all sessions all together.
+
+
+## Note --
+
+Whenever you start a new session , you immediately rename it,
+bcox if you do not rename , AI will give it a name , and that 
+name "Generally" is basis on first asked question. 
+
+
+Ideally you know which feature you are developing so , on the
+basis of that , name your feature like Login, Registration etc.
+
+In Future if you wanted to refer it , you would be aware of in 
+which session , what feature you developed.
+
+
+
+To rename session --
+/rename Session Name
+
+
+
+Use /btw for quick questions --
+By the way command such quick questions being asked , that will
+not become part of your conversation history.
+
+Now once you have done reading your Answer for the /btw question
+.Press SPACE , that question and Answer gets removed from that 
+session.
+
+
+## NOTE --
+
+So Whenever you are trying to have big refactoring in your code/
+making big change in your code .It is always advisible , that you 
+export your Past Conversation or Session.
+
+
+If you want to formally store into your project directory
+then use
+/export filname.md
+
+You'll be able to see the conversation into your project dir.
+And same you can forward to Claude Code , So that you can make 
+progress and update Claude with the Previous Context used over .
+
+
+
+## Note --
+/logout
+Successfully log's you out from your Claude Account.
+
+
+
+
+                    Models in Claude Code.
+
+. Opus -- most powerful but most expensive . Used for
+complex programming tasks.
+
+
+. Sonnet -- the default for most users . Best balance of speed,
+quality and token cost. Good for everyday coding tasks.
+
+
+. Haiku -- fastest and cheapest . Use for simple , repetitive or
+exploratory tasks where you don't need deep reasoning.
+
+
+
+##################################################################
+                        VV.IMp Concept
+
+A common power-user pattern is to use "Opus" for the planning phase
+-- where you're thinking through architecture , writing specs , making
+decisions -- then switch to "Sonnent" for the implementation phase where
+the thinking is done and you just need reliable code generation.
+
+##################################################################
+
+
+
+To Switch Between Models use
+/models 
+
+
+
+To Get Usage of your Claude Code
+/usage
+
+
+## Suppose in between you hit your limit , and you want to 
+further continue using Anthropic , you can have Topup for it.
+To midway recharge or Topup your Plan 
+/extra-usage
+
+
+To get whole Statistics of Your Usage Behaviour
+/stats
+
+
+On the Basis of your usage You can have detailed Analysis
+You get the Idea of How you are using Claude Code and How 
+you can improve it.
+/insights
+You get .html file 
+
+
+To change Configuration of your Claude Code
+/config
+You can enable "Thinking Mode" in which your Model gets capable enough
+to handle reasoning tasks.
+Your Model breaks down the Problem Step By Step
+
+
+To provide or allow/deny permissions to your tools.
+/permissions
+To allow Claude Code , access some services lets say webSearch , 
+without asking I would like it to do the tasks on its Own.
+So to do that add Tool inside "Add new rule"
+
+Now lets say I want some Bash Commands to be executed on its Own
+without Asking me , lets say i want My git initialization to happen
+So to do that
+Bash(git init)
+
+
+To Change Your Claude Theme
+/theme
+
+
+To enable Voice Mode
+/voice
+
+
+
+@rate symbols are used to specifically mention filenames
+& it should be used to specifically have changes in your file.
+for eg: --
+@templates/base.html
