@@ -8,3 +8,5 @@ __pycache__/
 .claude/plans/
 .desc.txt
 project_desc.txt
+.file.txt
+.file2.txt
