@@ -79,4 +79,4 @@ using any JS framework in this project
 
 Do not modify any other part of the page.
 
-git commit -m "landing: add youtube modal on see how it works click”
+git commit -m "landing: add youtube modal on see how it works click"

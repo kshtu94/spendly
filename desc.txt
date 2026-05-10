@@ -155,3 +155,250 @@ To enable Voice Mode
 & it should be used to specifically have changes in your file.
 for eg: --
 @templates/base.html
+
+
+
+
+Context Window -- Claude Code 
+
+A context window is the amount of information (in tokens) that
+a model like Claude Code can see and remember at one time while 
+generating a response.
+
+Think of it as the model's working memory.
+
+Context is All the information availbale to understand something 
+correctly.
+
+
+Lets say You are Programmer/Application Developer 
+
+1. Codebase -- Every single detail of your Code Base , what you have 
+done so far , what r u trying to build and what r the next steps you 
+should use while going forward.
+2. PRD/Spec --
+This PRD or Spec document , consists of complete requirement , where 
+it is written what type of application to be built , so from here as well
+we get our software development context.
+3. JIRA/GitHub issues--
+In Jira or GitHub where you receive every day tasks or the issues to be 
+resolved , from here you also pick your context.
+4. Slack/messages --
+From Slack / messages , you can get context .
+5. Previous AI Chats-- 
+Same goes for previous Chats with AI , you can give context to
+6. Git history/PRs--
+The whole git repo where you are working , you get all the context from there
+as well.
+
+
+Context Window = the maximum amount of context the model can hold at once.
+
+
+###################### NOTE ###########################
+
+Claude Code has context window of 200k tokens 
+
+Each new session starts with a fresh context window
+
+Tokens are consumed by both your messages and Claude's
+replies.
+
+Claude's replies consume roughly 6x more tokens than your 
+messages.
+
+########################################################
+
+
+
+
+###########################################################
+
+Every request sends the entire conversation history from 
+scratch.
+
+Subagents get their own isolated context window completely 
+seperate fron the main session.
+
+Subagents return only a summary to the main context -- not
+their full working history.
+
+##########################################################
+
+
+To Avoid Spending all tokens at Single Long Session , try to 
+create sessions per feature .
+
+
+So basically this Subagents concept is like Creating Seperate
+Subagents while talking to Claude , suddenly you realize their 
+our tasks that you can parallely execute . At this point you Trigger
+multiple Subagents.
+So every Subagent Tries to Execute its Task parallely.
+
+
+So basically Subagents Returns Summary to the Main Agent , after their
+Task is Completed.
+
+
+## Note --
+If you at a Certain Intance Try to hit the Limit of your Main Agent,
+try to engage in Subagent , that will provide you completely new Context 
+Window.
+
+
+
+###########################################################
+
+
+Skills -- 
+
+Skill file is something that consists of instructions in your
+.md file to be executed within that Session
+
+
+Auto Compact -- 
+
+It is the buffer Memory Kept in Claude Code , where lets say 
+user hits 75% of the tokens limit , so now claude code summarizes
+all the conversation history and stores in into Auto Compact buffer
+
+
+
+############################################################
+
+
+
+To visualize the context info of Claude , of different services
+occupying different token sizes --
+/context
+
+You will be able to see something similar to this --
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""
+/context                          
+  ⎿  Context Usage
+     ⛁ ⛁ ⛀ ⛀ ⛶   Sonnet 4.6         
+                 claude-sonnet-4-6  
+     ⛶ ⛶ ⛶ ⛶ ⛶   15.4k/200k tokens       (8%)                           
+                                    
+     ⛶ ⛶ ⛶ ⛶ ⛶   Estimated usage by 
+     category                       
+                 ⛁ System prompt:
+     6.3k tokens (3.2%)
+     ⛶ ⛶ ⛶ ⛶ ⛶   ⛁ System tools:
+     8.6k tokens (4.3%)
+                 ⛁ Skills: 476
+     tokens (0.2%)
+     ⛶ ⛶ ⛝ ⛝ ⛝   ⛁ Messages: 8
+     tokens (0.0%)
+                 ⛶ Free space:
+     163.6k (81.8%)
+                 ⛝ Autocompact
+     buffer: 21k tokens (10.5%)
+
+     Skills · /skills
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+
+
+Why Context Window Matters ?
+
+. It affects cost
+
+. It shapes how you should structure your workflow
+
+. Response Quality Degrades as Context Fills Up
+
+
+
+
+Ok ######################################################
+
+                    VV.Imp Pt.
+
+
+Lets say you are in a situation where you are stuck or 
+almost about to fill/close to filling your context Window.
+
+How to Resolve that ?
+
+
+Stage1. Quality Degrades.
+
+Stage2. Auto-Compaction Triggers (~75-92% Full)
+
+Stage3. Repeated Compaction Causes Corruption
+
+Stage4. Hard Stop
+
+So this above Work is Done by Claude Itself .
+
+**************************************************
+
+But lets say you want to Do it on your Own Basis or Manually
+So if you See the Response Quality is getting Degraded.
+
+So you can Manually Compact your Till Now Conversation
+
+To do that ----
+
+/compact
+
+What this does is it Reads all the Conversation History 
+so far within my session , Summarizes it and Stores in 
+my AutoCompact (33K) Tokens History.
+
+
+AutoCompaction done is Automatically By Claude itself,
+this can create a problem , lets say in between your 
+conversation Claude thought of creating Compaction , so 
+till now whatever chat conversation has happened may be
+inbetween the conversation as well , Claude picks the conv-
+ersation and Started Summarizing it , which may indeed 
+result in Incomplete Info. Summary so far with Claude 
+Conversation.
+
+whereas 
+
+in Case of Manual Periodic Checks , you can decide when to
+create compacts lets say you are close to 70 - 75 % or in 
+between it . You do it on your Own.
+##########################################################
+
+
+
+Next If you have already fill Already your AutoCompact
+memory ---
+
+
+Then you can 
+
+
+Start a sub-agent for the next task.
+
+or either you run
+
+/clear or start new session.
+
+
+
+
+
+
+###########################################################
+
+                        GOOD PRACTICES
+
+
+. One Session per feature
+
+. Use/compact (Proactively,Not Reactively)
+
+. Write Focused , Specific Prompts
+
+. Use Subagents for Isolated or Exploratory Work
+
+. Use .claudeignore to Keep Irrelevant Files Out
+

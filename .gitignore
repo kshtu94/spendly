@@ -10,3 +10,9 @@ __pycache__/
 project_desc.txt
 .file.txt
 .file2.txt
+./claude
+custom_slash_commands.txt
+md_files_auto_memory.txt
+plan_mode.txt
+spec_driven_coding.txt
+spendly.db
