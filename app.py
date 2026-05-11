@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, session, redirect, url_for
+from flask import Flask, render_template, request, session, redirect, url_for, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from database.db import get_db, init_db, seed_db
 
@@ -22,6 +22,8 @@ def landing():
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "GET":
+        if session.get("user_id"):
+            return redirect(url_for("landing"))
         return render_template("register.html")
 
     name = request.form["name"].strip()
@@ -54,6 +56,8 @@ def register():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "GET":
+        if session.get("user_id"):
+            return redirect(url_for("landing"))
         return render_template("login.html")
 
     email = request.form["email"].strip()
@@ -70,7 +74,7 @@ def login():
 
     session["user_id"] = user["id"]
     session["user_name"] = user["name"]
-    return redirect(url_for("profile"))
+    return redirect(url_for("landing"))
 
 
 # ------------------------------------------------------------------ #
@@ -89,7 +93,9 @@ def privacy():
 
 @app.route("/logout")
 def logout():
-    return "Logout — coming in Step 3"
+    session.clear()
+    flash("You have been signed out.")
+    return redirect(url_for("login"))
 
 
 @app.route("/profile")
