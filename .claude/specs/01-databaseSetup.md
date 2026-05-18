@@ -67,7 +67,7 @@ Safe to call multiple times
 Ensures schema is ready before app usage
 C. seed_db()
 Checks if users table already contains data
-If yes → return early (no duplication)
+If yes → return early (no  duplication)
 Inserts one demo user:
 name: Demo User
 email: demo@spendly.com

@@ -57,7 +57,7 @@ def register():
 def login():
     if request.method == "GET":
         if session.get("user_id"):
-            return redirect(url_for("landing"))
+            return redirect(url_for("profile"))
         return render_template("login.html")
 
     email = request.form["email"].strip()
@@ -74,7 +74,7 @@ def login():
 
     session["user_id"] = user["id"]
     session["user_name"] = user["name"]
-    return redirect(url_for("landing"))
+    return redirect(url_for("profile"))
 
 
 # ------------------------------------------------------------------ #
@@ -100,7 +100,35 @@ def logout():
 
 @app.route("/profile")
 def profile():
-    return "Profile page — coming in Step 4"
+    if not session.get("user_id"):
+        return redirect(url_for("login"))
+
+    db = get_db()
+    user = db.execute(
+        "SELECT name, email, created_at FROM users WHERE id = ?",
+        (session["user_id"],)
+    ).fetchone()
+
+    stats = db.execute(
+        "SELECT COUNT(*) AS expense_count, COALESCE(SUM(amount), 0) AS grand_total "
+        "FROM expenses WHERE user_id = ?",
+        (session["user_id"],)
+    ).fetchone()
+
+    categories = db.execute(
+        "SELECT category, COUNT(*) AS count, SUM(amount) AS total "
+        "FROM expenses WHERE user_id = ? GROUP BY category ORDER BY total DESC",
+        (session["user_id"],)
+    ).fetchall()
+
+    db.close()
+    return render_template(
+        "profile.html",
+        user=user,
+        categories=categories,
+        grand_total=stats["grand_total"],
+        expense_count=stats["expense_count"],
+    )
 
 
 @app.route("/expenses/add")

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Profile — Spendly{% endblock %}
+{% block content %}
+<div class="profile-page">
+  <div class="profile-layout">
+
+    <!-- User info card -->
+    <div class="profile-card">
+      <div class="profile-avatar">
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="1.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <circle cx="12" cy="10" r="3"/>
+          <path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/>
+        </svg>
+      </div>
+      <h1 class="profile-name">{{ user.name }}</h1>
+      <p class="profile-email">{{ user.email }}</p>
+      <p class="profile-joined">Member since {{ user.created_at[:10] }}</p>
+    </div>
+
+    <!-- Expense summary -->
+    <div class="profile-summary">
+      <h2 class="summary-title">Spending Summary</h2>
+
+      <div class="summary-stats">
+        <div class="stat-chip">
+          <span class="stat-label">Total Spent</span>
+          <span class="stat-value">${{ "%.2f"|format(grand_total) }}</span>
+        </div>
+        <div class="stat-chip">
+          <span class="stat-label">Expenses</span>
+          <span class="stat-value">{{ expense_count }}</span>
+        </div>
+      </div>
+
+      {% if expense_count == 0 %}
+      <div class="profile-empty">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="1.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/>
+          <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/>
+          <path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/>
+        </svg>
+        <p>No expenses yet. Start tracking your spending to see a summary here.</p>
+      </div>
+      {% else %}
+      <table class="category-table">
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Expenses</th>
+            <th>Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in categories %}
+          <tr>
+            <td>{{ row.category }}</td>
+            <td>{{ row.count }}</td>
+            <td>${{ "%.2f"|format(row.total) }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}
