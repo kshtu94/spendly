@@ -1,0 +1,31 @@
+######################################################
+
+
+Q. WHy do we use SLUGS ?
+
+
+Problem -- profile page design.md breaks on some System
+
+Spaces in URLS /feature/profile page design -- must be 
+encoded as %20
+
+Special Characters -- C# , Node.js , C++ -- break file paths
+and git branch names 
+
+Case Incositency -- Profile-Page vs profile-page - causes 
+mismatches
+
+
+
+So "Profile Page Design" becomes profile-page-design --
+lowercase , hypens only , no spaces or symbols -- and that 
+slug is safe to use everywhere.
+
+
+    - Git branch name: feature/profile-page-design
+    - Spec filename: 04-profile-page-design.md
+    - URLs: /blog/profile-page-design
+
+    The slug is derived from the human title but is never shown
+    to users as a label — the human title (Profile Page Design)
+    is used for display, the slug for machine/system use.
