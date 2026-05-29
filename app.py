@@ -1,10 +1,34 @@
+import os
+from datetime import datetime
 from flask import Flask, render_template, request, session, redirect, url_for, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from database.db import get_db, init_db, seed_db
-from database.queries import get_recent_transactions, get_summary_stats, get_category_breakdown
+from database.queries import (
+    get_recent_transactions, get_summary_stats, get_category_breakdown,
+    get_preset_dates, detect_preset,
+)
 
 app = Flask(__name__)
 app.secret_key = "spendly-dev-secret"  # change to env var in production
+
+
+def _parse_date(raw):
+    """Validate and return raw as an ISO date string, or None if invalid."""
+    if not raw:
+        return None
+    try:
+        return datetime.strptime(raw.strip(), "%Y-%m-%d").date().isoformat()
+    except ValueError:
+        return None
+
+
+def _format_date(iso_str):
+    """Format a YYYY-MM-DD string as 'D Month YYYY' for display."""
+    if not iso_str:
+        return ""
+    d = datetime.strptime(iso_str, "%Y-%m-%d")
+    return f"{d.day} {d.strftime('%B %Y')}"
+
 
 with app.app_context():
     init_db()
@@ -111,16 +135,21 @@ def profile():
     ).fetchone()
     db.close()
 
-    # === SECTION 1: Transaction History (Subagent 1) ===
-    recent_transactions = get_recent_transactions(session["user_id"])
+    date_from = _parse_date(request.args.get("date_from"))
+    date_to = _parse_date(request.args.get("date_to"))
 
-    # === SECTION 2: Summary Stats (Subagent 2) ===
-    stats = get_summary_stats(session["user_id"])
+    if date_from and date_to and date_from > date_to:
+        flash("Start date must be before end date.")
+        date_from = date_to = None
+
+    presets = get_preset_dates()
+    active_preset = detect_preset(date_from, date_to, presets)
+
+    recent_transactions = get_recent_transactions(session["user_id"], date_from=date_from, date_to=date_to)
+    stats = get_summary_stats(session["user_id"], date_from=date_from, date_to=date_to)
     grand_total = stats["grand_total"]
     expense_count = stats["expense_count"]
-
-    # === SECTION 3: Category Breakdown (Subagent 3) ===
-    categories = get_category_breakdown(session["user_id"])
+    categories = get_category_breakdown(session["user_id"], date_from=date_from, date_to=date_to)
 
     return render_template(
         "profile.html",
@@ -129,6 +158,12 @@ def profile():
         categories=categories,
         grand_total=grand_total,
         expense_count=expense_count,
+        date_from=date_from,
+        date_to=date_to,
+        date_from_display=_format_date(date_from),
+        date_to_display=_format_date(date_to),
+        active_preset=active_preset,
+        presets=presets,
     )
 
 
@@ -199,4 +234,5 @@ def delete_expense(id):
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5001)
+    debug = os.environ.get("FLASK_DEBUG", "false").lower() == "true"
+    app.run(debug=debug, port=5001)
