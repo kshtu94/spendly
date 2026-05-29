@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Profile — Spendly{% endblock %}
+
+{% block content %}
+
+<section class="auth-section">
+    <div class="auth-container">
+
+        <div class="auth-header">
+            <h1 class="auth-title">Edit profile</h1>
+            <p class="auth-subtitle">Update your name or change your password</p>
+        </div>
+
+        <div class="auth-card">
+            {% if error %}
+            <div class="auth-error">{{ error }}</div>
+            {% endif %}
+
+            <form method="POST" action="{{ url_for('edit_profile') }}">
+                <div class="form-group">
+                    <label for="name">Display name</label>
+                    <input type="text" id="name" name="name"
+                           class="form-input" placeholder="Your name"
+                           value="{{ user.name }}" required autofocus>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email address</label>
+                    <input type="email" id="email"
+                           class="form-input" value="{{ user.email }}"
+                           disabled>
+                </div>
+                <div class="form-group">
+                    <label for="new_password">New password <span style="color: var(--ink-3); font-weight: 400;">(leave blank to keep current)</span></label>
+                    <input type="password" id="new_password" name="new_password"
+                           class="form-input" placeholder="At least 8 characters">
+                </div>
+                <div class="form-group">
+                    <label for="confirm_password">Confirm new password</label>
+                    <input type="password" id="confirm_password" name="confirm_password"
+                           class="form-input" placeholder="Repeat new password">
+                </div>
+                <button type="submit" class="btn-submit">Save changes</button>
+            </form>
+        </div>
+
+        <p class="auth-switch">
+            <a href="{{ url_for('profile') }}">Cancel — back to profile</a>
+        </p>
+
+    </div>
+</section>
+
+{% endblock %}

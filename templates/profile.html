@@ -1,73 +1,161 @@
 {% extends "base.html" %}
 {% block title %}Profile — Spendly{% endblock %}
+
 {% block content %}
-<div class="profile-page">
-  <div class="profile-layout">
+<section class="page page--profile">
 
-    <!-- User info card -->
-    <div class="profile-card">
-      <div class="profile-avatar">
-        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24"
-             fill="none" stroke="currentColor" stroke-width="1.5"
-             stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"/>
-          <circle cx="12" cy="10" r="3"/>
-          <path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/>
-        </svg>
-      </div>
-      <h1 class="profile-name">{{ user.name }}</h1>
-      <p class="profile-email">{{ user.email }}</p>
-      <p class="profile-joined">Member since {{ user.created_at[:10] }}</p>
+  {# ── Profile identity header ─────────────────────────────── #}
+  <div class="pf-header-card">
+    <div class="pf-avatar" aria-hidden="true">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="1.75"
+           stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <circle cx="12" cy="10" r="3"/>
+        <path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/>
+      </svg>
     </div>
+    <div class="pf-identity">
+      <h1 class="pf-name">{{ user.name }}</h1>
+      <p class="pf-email">{{ user.email }}</p>
+      <p class="pf-since">Member since {{ user.created_at[:10] }}</p>
+    </div>
+    <a href="{{ url_for('edit_profile') }}" class="btn-ghost pf-edit-btn">
+      <svg class="icon icon--sm" width="14" height="14" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+      </svg>
+      Edit profile
+    </a>
+  </div>
 
-    <!-- Expense summary -->
-    <div class="profile-summary">
-      <h2 class="summary-title">Spending Summary</h2>
+  {% if expense_count == 0 %}
+  {# ── Empty state ──────────────────────────────────────────── #}
+  <div class="pf-empty">
+    <svg class="pf-empty-icon" width="48" height="48" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="1.25"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/>
+      <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/>
+      <path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/>
+    </svg>
+    <h2 class="pf-empty-title">No expenses yet</h2>
+    <p class="pf-empty-body">Add your first expense to start seeing your spending summary here.</p>
+  </div>
 
-      <div class="summary-stats">
-        <div class="stat-chip">
-          <span class="stat-label">Total Spent</span>
-          <span class="stat-value">${{ "%.2f"|format(grand_total) }}</span>
-        </div>
-        <div class="stat-chip">
-          <span class="stat-label">Expenses</span>
-          <span class="stat-value">{{ expense_count }}</span>
-        </div>
-      </div>
+  {% else %}
 
-      {% if expense_count == 0 %}
-      <div class="profile-empty">
-        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"
-             fill="none" stroke="currentColor" stroke-width="1.5"
-             stroke-linecap="round" stroke-linejoin="round">
+  {# ── Stats row ─────────────────────────────────────────────── #}
+  <div class="pf-stats-row">
+
+    <div class="pf-stat-card pf-stat-card--primary">
+      <div class="pf-stat-icon-wrap">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/>
           <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/>
           <path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/>
         </svg>
-        <p>No expenses yet. Start tracking your spending to see a summary here.</p>
       </div>
-      {% else %}
-      <table class="category-table">
-        <thead>
-          <tr>
-            <th>Category</th>
-            <th>Expenses</th>
-            <th>Amount</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for row in categories %}
-          <tr>
-            <td>{{ row.category }}</td>
-            <td>{{ row.count }}</td>
-            <td>${{ "%.2f"|format(row.total) }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-      {% endif %}
+      <div class="pf-stat-body">
+        <span class="pf-stat-label">Total Spent</span>
+        <span class="pf-stat-value">₹{{ "%.2f"|format(grand_total) }}</span>
+      </div>
+    </div>
+
+    <div class="pf-stat-card">
+      <div class="pf-stat-icon-wrap">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/>
+          <path d="M16 8H8M16 12H8M12 16H8"/>
+        </svg>
+      </div>
+      <div class="pf-stat-body">
+        <span class="pf-stat-label">Transactions</span>
+        <span class="pf-stat-value">{{ expense_count }}</span>
+      </div>
+    </div>
+
+    <div class="pf-stat-card">
+      <div class="pf-stat-icon-wrap">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 2H2v10l9.29 9.29a1 1 0 0 0 1.41 0l7-7a1 1 0 0 0 0-1.41Z"/>
+          <path d="M7 7h.01"/>
+        </svg>
+      </div>
+      <div class="pf-stat-body">
+        <span class="pf-stat-label">Categories</span>
+        <span class="pf-stat-value">{{ categories|length }}</span>
+      </div>
     </div>
 
   </div>
-</div>
+
+  {# ── Main 2-column grid ────────────────────────────────────── #}
+  <div class="pf-main-grid">
+
+    {# Left — Recent transactions table #}
+    <div class="pf-panel">
+      <h2 class="pf-panel-title">Recent Transactions</h2>
+      <div class="pf-txn-scroll">
+        <table class="pf-txn-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Category</th>
+              <th>Description</th>
+              <th class="pf-txn-right">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for t in recent_transactions %}
+            <tr class="pf-txn-row">
+              <td class="pf-txn-date">{{ t.date }}</td>
+              <td class="pf-txn-cat">
+                <span class="cat-badge cat-badge--{{ t.category|lower }}">{{ t.category }}</span>
+              </td>
+              <td class="pf-txn-desc">{{ t.description or "—" }}</td>
+              <td class="pf-txn-amt">₹{{ "%.2f"|format(t.amount) }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    {# Right — Spending breakdown with progress bars #}
+    <div class="pf-panel">
+      <h2 class="pf-panel-title">Spending Breakdown</h2>
+      <div class="pf-cat-list">
+        {% for cat in categories %}
+        <div class="pf-cat-row">
+          <div class="pf-cat-header" style="--i: {{ loop.index0 }}">
+            <span class="cat-badge cat-badge--{{ cat.category|lower }}">{{ cat.category }}</span>
+            <div class="pf-cat-meta">
+              <span class="pf-cat-count">{{ cat.count }} txn{{ 's' if cat.count != 1 }}</span>
+              <span class="pf-cat-amount">₹{{ "%.2f"|format(cat.total) }}</span>
+              <span class="pf-cat-pct">{{ cat.percentage }}%</span>
+            </div>
+          </div>
+          <div class="pf-progress-track">
+            <div class="pf-progress-fill pf-progress-fill--{{ cat.category|lower }}"
+                 style="--target-width: {{ cat.percentage }}%; --i: {{ loop.index0 }}">
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+  {% endif %}
+
+</section>
 {% endblock %}

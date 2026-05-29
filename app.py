@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, session, redirect, url_for, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from database.db import get_db, init_db, seed_db
+from database.queries import get_recent_transactions, get_summary_stats, get_category_breakdown
 
 app = Flask(__name__)
 app.secret_key = "spendly-dev-secret"  # change to env var in production
@@ -108,27 +109,78 @@ def profile():
         "SELECT name, email, created_at FROM users WHERE id = ?",
         (session["user_id"],)
     ).fetchone()
-
-    stats = db.execute(
-        "SELECT COUNT(*) AS expense_count, COALESCE(SUM(amount), 0) AS grand_total "
-        "FROM expenses WHERE user_id = ?",
-        (session["user_id"],)
-    ).fetchone()
-
-    categories = db.execute(
-        "SELECT category, COUNT(*) AS count, SUM(amount) AS total "
-        "FROM expenses WHERE user_id = ? GROUP BY category ORDER BY total DESC",
-        (session["user_id"],)
-    ).fetchall()
-
     db.close()
+
+    # === SECTION 1: Transaction History (Subagent 1) ===
+    recent_transactions = get_recent_transactions(session["user_id"])
+
+    # === SECTION 2: Summary Stats (Subagent 2) ===
+    stats = get_summary_stats(session["user_id"])
+    grand_total = stats["grand_total"]
+    expense_count = stats["expense_count"]
+
+    # === SECTION 3: Category Breakdown (Subagent 3) ===
+    categories = get_category_breakdown(session["user_id"])
+
     return render_template(
         "profile.html",
         user=user,
+        recent_transactions=recent_transactions,
         categories=categories,
-        grand_total=stats["grand_total"],
-        expense_count=stats["expense_count"],
+        grand_total=grand_total,
+        expense_count=expense_count,
     )
+
+
+@app.route("/profile/edit", methods=["GET", "POST"])
+def edit_profile():
+    if not session.get("user_id"):
+        return redirect(url_for("login"))
+
+    db = get_db()
+    user = db.execute(
+        "SELECT name, email FROM users WHERE id = ?", (session["user_id"],)
+    ).fetchone()
+
+    if request.method == "GET":
+        db.close()
+        return render_template("profile_edit.html", user=user)
+
+    name = request.form["name"].strip()
+    new_password = request.form.get("new_password", "")
+    confirm_password = request.form.get("confirm_password", "")
+
+    if not name:
+        db.close()
+        return render_template("profile_edit.html", user=user, error="Name is required.")
+
+    if new_password:
+        if len(new_password) < 8:
+            db.close()
+            return render_template(
+                "profile_edit.html",
+                user={"name": name, "email": user["email"]},
+                error="Password must be at least 8 characters.",
+            )
+        if new_password != confirm_password:
+            db.close()
+            return render_template(
+                "profile_edit.html",
+                user={"name": name, "email": user["email"]},
+                error="Passwords do not match.",
+            )
+        db.execute(
+            "UPDATE users SET name = ?, password_hash = ? WHERE id = ?",
+            (name, generate_password_hash(new_password), session["user_id"]),
+        )
+    else:
+        db.execute("UPDATE users SET name = ? WHERE id = ?", (name, session["user_id"]))
+
+    db.commit()
+    db.close()
+    session["user_name"] = name
+    flash("Profile updated successfully.")
+    return redirect(url_for("profile"))
 
 
 @app.route("/expenses/add")
