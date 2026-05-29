@@ -31,21 +31,28 @@
     </a>
   </div>
 
-  {% if expense_count == 0 %}
-  {# ── Empty state ──────────────────────────────────────────── #}
-  <div class="pf-empty">
-    <svg class="pf-empty-icon" width="48" height="48" viewBox="0 0 24 24" fill="none"
-         stroke="currentColor" stroke-width="1.25"
-         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/>
-      <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/>
-      <path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/>
-    </svg>
-    <h2 class="pf-empty-title">No expenses yet</h2>
-    <p class="pf-empty-body">Add your first expense to start seeing your spending summary here.</p>
+  {# ── Date filter bar ────────────────────────────────────────── #}
+  <div class="pf-filter-bar">
+    <div class="pf-presets">
+      <a href="{{ url_for('profile') }}"
+         class="preset-btn{% if active_preset == 'all_time' %} preset-btn--active{% endif %}">All Time</a>
+      <a href="{{ url_for('profile', date_from=presets.this_month, date_to=presets.today) }}"
+         class="preset-btn{% if active_preset == 'this_month' %} preset-btn--active{% endif %}">This Month</a>
+      <a href="{{ url_for('profile', date_from=presets.last_3_months, date_to=presets.today) }}"
+         class="preset-btn{% if active_preset == 'last_3_months' %} preset-btn--active{% endif %}">Last 3 Months</a>
+      <a href="{{ url_for('profile', date_from=presets.last_6_months, date_to=presets.today) }}"
+         class="preset-btn{% if active_preset == 'last_6_months' %} preset-btn--active{% endif %}">Last 6 Months</a>
+    </div>
+    <form method="GET" action="{{ url_for('profile') }}" class="pf-filter-form">
+      <input type="date" name="date_from" value="{{ date_from or '' }}" class="pf-date-input">
+      <span class="pf-filter-to">to</span>
+      <input type="date" name="date_to"   value="{{ date_to or '' }}" class="pf-date-input">
+      <button type="submit" class="pf-filter-apply">Apply</button>
+    </form>
   </div>
-
-  {% else %}
+  {% if date_from and date_to %}
+  <p class="pf-range-label">Showing {{ date_from_display }} – {{ date_to_display }}</p>
+  {% endif %}
 
   {# ── Stats row ─────────────────────────────────────────────── #}
   <div class="pf-stats-row">
@@ -97,6 +104,21 @@
     </div>
 
   </div>
+
+  {% if expense_count == 0 %}
+  {# ── Empty state ──────────────────────────────────────────── #}
+  <div class="pf-empty">
+    <svg class="pf-empty-icon" width="48" height="48" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="1.25"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/>
+      <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/>
+      <path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/>
+    </svg>
+    <h2 class="pf-empty-title">No expenses yet</h2>
+    <p class="pf-empty-body">Add your first expense to start seeing your spending summary here.</p>
+  </div>
+  {% else %}
 
   {# ── Main 2-column grid ────────────────────────────────────── #}
   <div class="pf-main-grid">
@@ -158,4 +180,5 @@
   {% endif %}
 
 </section>
+
 {% endblock %}
