@@ -91,3 +91,16 @@ def get_category_breakdown(user_id, date_from=None, date_to=None):
     for c in categories:
         c["percentage"] = round(c["total"] / grand * 100) if grand else 0
     return categories
+
+
+def insert_expense(user_id, amount, category, date, description=None):
+    """Insert a new expense row for user_id and return its id."""
+    db = get_db()
+    cursor = db.execute(
+        "INSERT INTO expenses (user_id, amount, category, date, description) VALUES (?, ?, ?, ?, ?)",
+        (user_id, amount, category, date, description),
+    )
+    db.commit()
+    expense_id = cursor.lastrowid
+    db.close()
+    return expense_id
