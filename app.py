@@ -5,11 +5,13 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from database.db import get_db, init_db, seed_db
 from database.queries import (
     get_recent_transactions, get_summary_stats, get_category_breakdown,
-    get_preset_dates, detect_preset,
+    get_preset_dates, detect_preset, insert_expense,
 )
 
 app = Flask(__name__)
 app.secret_key = "spendly-dev-secret"  # change to env var in production
+
+CATEGORIES = ("Food", "Transport", "Bills", "Health", "Entertainment", "Shopping", "Other")
 
 
 def _parse_date(raw):
@@ -218,9 +220,60 @@ def edit_profile():
     return redirect(url_for("profile"))
 
 
-@app.route("/expenses/add")
+@app.route("/analytics")
+def analytics():
+    if not session.get("user_id"):
+        return redirect(url_for("login"))
+    return render_template("analytics.html")
+
+
+@app.route("/expenses/add", methods=["GET", "POST"])
 def add_expense():
-    return "Add expense — coming in Step 7"
+    if not session.get("user_id"):
+        return redirect(url_for("login"))
+
+    today = datetime.now().date().isoformat()
+
+    if request.method == "GET":
+        return render_template("add_expense.html", categories=CATEGORIES, today=today)
+
+    raw_amount = request.form.get("amount", "").strip()
+    category = request.form.get("category", "").strip()
+    raw_date = request.form.get("date", "").strip()
+    description = request.form.get("description", "").strip()
+
+    form_values = {
+        "amount": raw_amount,
+        "category": category,
+        "date": raw_date,
+        "description": description,
+    }
+
+    def reject(message):
+        return render_template(
+            "add_expense.html", categories=CATEGORIES, today=today,
+            error=message, **form_values
+        )
+
+    try:
+        amount = float(raw_amount)
+    except ValueError:
+        return reject("Enter a valid amount.")
+    if amount <= 0:
+        return reject("Amount must be greater than zero.")
+
+    if category not in CATEGORIES:
+        return reject("Select a valid category.")
+
+    date = _parse_date(raw_date)
+    if not date:
+        return reject("Enter a valid date.")
+    if date > today:
+        return reject("Date cannot be in the future.")
+
+    insert_expense(session["user_id"], amount, category, date, description or None)
+    flash("Expense added.")
+    return redirect(url_for("profile"))
 
 
 @app.route("/expenses/<int:id>/edit")
