@@ -1,11 +1,12 @@
 import os
 from datetime import datetime
-from flask import Flask, render_template, request, session, redirect, url_for, flash
+from flask import Flask, render_template, request, session, redirect, url_for, flash, abort
 from werkzeug.security import generate_password_hash, check_password_hash
 from database.db import get_db, init_db, seed_db
 from database.queries import (
     get_recent_transactions, get_summary_stats, get_category_breakdown,
     get_preset_dates, detect_preset, insert_expense,
+    get_expense_by_id, update_expense,
 )
 
 app = Flask(__name__)
@@ -276,9 +277,53 @@ def add_expense():
     return redirect(url_for("profile"))
 
 
-@app.route("/expenses/<int:id>/edit")
+@app.route("/expenses/<int:id>/edit", methods=["GET", "POST"])
 def edit_expense(id):
-    return "Edit expense — coming in Step 8"
+    if not session.get("user_id"):
+        return redirect(url_for("login"))
+
+    expense = get_expense_by_id(id, session["user_id"])
+    if not expense:
+        abort(404)
+
+    if request.method == "GET":
+        return render_template("edit_expense.html", expense=expense, categories=CATEGORIES)
+
+    raw_amount = request.form.get("amount", "").strip()
+    category = request.form.get("category", "").strip()
+    raw_date = request.form.get("date", "").strip()
+    description = request.form.get("description", "").strip()
+
+    form_values = {
+        "amount": raw_amount,
+        "category": category,
+        "date": raw_date,
+        "description": description,
+    }
+
+    def reject(message):
+        return render_template(
+            "edit_expense.html", expense=expense, categories=CATEGORIES,
+            error=message, **form_values
+        )
+
+    try:
+        amount = float(raw_amount)
+    except ValueError:
+        return reject("Enter a valid amount.")
+    if amount <= 0:
+        return reject("Amount must be greater than zero.")
+
+    if category not in CATEGORIES:
+        return reject("Select a valid category.")
+
+    date = _parse_date(raw_date)
+    if not date:
+        return reject("Enter a valid date.")
+
+    update_expense(id, session["user_id"], amount, category, date, description or None)
+    flash("Expense updated.")
+    return redirect(url_for("profile"))
 
 
 @app.route("/expenses/<int:id>/delete")

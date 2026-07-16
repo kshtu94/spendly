@@ -104,3 +104,27 @@ def insert_expense(user_id, amount, category, date, description=None):
     expense_id = cursor.lastrowid
     db.close()
     return expense_id
+
+
+def get_expense_by_id(expense_id, user_id):
+    """Return a single expense row as a dict if it belongs to user_id, else None."""
+    db = get_db()
+    row = db.execute(
+        "SELECT id, user_id, amount, category, date, description "
+        "FROM expenses WHERE id = ? AND user_id = ?",
+        (expense_id, user_id),
+    ).fetchone()
+    db.close()
+    return dict(row) if row else None
+
+
+def update_expense(expense_id, user_id, amount, category, date, description=None):
+    """Update an existing expense row scoped to id and user_id. No-op if not owned/found."""
+    db = get_db()
+    db.execute(
+        "UPDATE expenses SET amount = ?, category = ?, date = ?, description = ? "
+        "WHERE id = ? AND user_id = ?",
+        (amount, category, date, description, expense_id, user_id),
+    )
+    db.commit()
+    db.close()
