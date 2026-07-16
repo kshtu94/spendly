@@ -1044,6 +1044,26 @@ a { color: inherit; text-decoration: none; }
     font-variant-numeric: tabular-nums;
 }
 
+.pf-txn-actions-col { text-align: right; width: 1%; white-space: nowrap; }
+.pf-txn-actions { text-align: right; white-space: nowrap; }
+
+.pf-txn-edit {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--accent);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+}
+
+.pf-txn-edit:hover {
+    background: var(--accent-light);
+    border-color: var(--accent);
+}
+
 /* ── Empty state ── */
 .pf-empty {
     background: var(--paper-card);
